@@ -1,6 +1,7 @@
 <html>
 	<head>
-		<title>OneOC</title>
+		<title>@Tax by OneOC</title>
+		<link rel="icon"  type="image/png" href="favicon.ico">
 		<script src="jquery.min.js"></script>
 		<script src="jquery-ui.min.js"></script>
 		<script src="angular.min.js"></script>
@@ -10,70 +11,80 @@
 		<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
 		<link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
 		<link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
-		<style>
-			.locationcell {
-				display: inline-block;
-				width: 25px;
-				height: 25px;
-				border: 1px dotted black;
-				margin: 0px;
-				padding: 0px;
-				position:relative;
-			}
-
-			.logo {
-				display: inline;
-				border: none;
-				margin:-270px -270px 0 auto;
-			    padding:260px 270px 0 0;
-			    background:url(css/images/la.gif) no-repeat;
-			    background-size: 270px 270px;
-			    width: 0px;
-			    height:0px;
-			}
-		</style>
+		<link rel="stylesheet" type="text/css" href="css/custom.css">
 	</head>
 	<body ng-app="OneOC">
 		<div ng-controller="LoginController">
-			<div ng-show="!loggedIn">
-				<form>
-					<input ng-model="uciID"/>
-					<button ng-click="setLogin(uciID)">Login</button>
-				</form>
+			<div class="header" ng-show="!loggedIn">
+				<span>
+					<center>
+						<img src="css/images/oneOC.png" style="height:100%"/>
+					</center>
+				</span>
+			</div>
+			<div  class="loginPane" ng-show="!loggedIn">
+				<div class="login">
+				    <input type="text" ng-model="uciID" placeholder="Username" id="username">  
+				 	 <input type="password" placeholder="password" id="password">  
+				 	<input type="submit" value="Sign In" ng-click="setLogin(uciID)">
+				</div>
+				<div class="shadow"></div>
 			</div>
 			<div ng-show="loggedIn" ng-controller="TaxProController as tpController">
 				<div class="header">
 					Welcome, {{$parent.id}}
 					<span class="logout"><a href="#" ng-click="$parent.logout()">Logout</a></span>
-				<div>
-					<input type="text" ng-model="name"/>
-					<input type="text" ng-model="last"/>
-					<button ng-click="addProfessional(name, [1])">Add</button>
 				</div>
-
-				<select ng-model="filter_by_language">
-					<option value="0">Spanish</option>
-					<option value="1">English</option>
-					<option value="2">Chinese</option>
-				</select>
-				<div ng-model="location" locationpicker></div>
-				<input type="text" datepicker ng-model="selectedDate" />
-				<span>Selected location at : {{selectedLocation}}</span>
+				
 				<table>
-					<th>
-
-					</th>
+					<tr>
+						<td style="vertical-align:top">
+							<span> Please select a date:</span>
+							<input type="text" datepicker ng-model="selectedDate" />
+							<br>
+							<br>
+							<br>
+							<span> Do you have any language preferences?</span>
+							<select 
+							    ng-model="filter_by_language" 
+							    ng-options="l.value as l.name for l in spokenLanguageOptions">
+							</select>
+							<br>
+							<br>
+							<br>
+							<button ng-click="triggerSearch()">Search</button>
+						</td>
+						<td>
+							<!--This directive is used to set the location for the user-->
+							<span>Please select a location</span><br>
+							<div ng-model="location" locationpicker></div>
+							<span>Your selected location: {{selectedLocation}}</span>
+							<br>
+						</td>
+						
+					</tr>
+				</table>
+				
+				
+				<table class="responstable" ng-show="searchTriggered">
+					<tr>
+						<th>ID</th>
+						<th>Name</th>
+						<th>Languages</th>
+						<th></th>
+					</tr>
 					<tr ng-repeat="pro in listOfProfessionals|language:filter_by_language|sort_by_distance:selectedLocation[0]:selectedLocation[1]">
 						<td>
-							{{$index}}
+							{{pro.id}}
 						</td>
 						<td>
 							{{pro.name}}
 						</td>
 						<td>
-							<ul>
-								<li ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}}</li>
-							</ul>
+							<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
+						</td>
+						<td>
+							<span class="selectProfessional" ng-click="selectProfessional(pro.id)">Make an appointment</span>
 						</td>
 				</table>
 			</div>
