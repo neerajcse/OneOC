@@ -1,13 +1,36 @@
 <html>
 	<head>
 		<title>OneOC</title>
-		<script src='http://maps.google.cn/maps/api/js'></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
-		<script src="lodash.js"></script>
-		<script src="angular-google-maps.js"></script>
+		<script src="jquery.min.js"></script>
+		<script src="jquery-ui.min.js"></script>
+		<script src="angular.min.js"></script>
+		
 		<script src="tax_professionals_ng.js"></script>
+	
+		<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+		<link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+		<link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
 		<style>
-			.angular-google-map-container { height: 400px; width:400px; }
+			.locationcell {
+				display: inline-block;
+				width: 25px;
+				height: 25px;
+				border: 1px dotted black;
+				margin: 0px;
+				padding: 0px;
+				position:relative;
+			}
+
+			.logo {
+				display: inline;
+				border: none;
+				margin:-270px -270px 0 auto;
+			    padding:260px 270px 0 0;
+			    background:url(css/images/la.gif) no-repeat;
+			    background-size: 270px 270px;
+			    width: 0px;
+			    height:0px;
+			}
 		</style>
 	</head>
 	<body ng-app="OneOC">
@@ -21,21 +44,26 @@
 			<div ng-show="loggedIn" ng-controller="TaxProController as tpController">
 				<div class="header">
 					Welcome, {{$parent.id}}
-					<span class="logout"><a href="#" ng-click="$parent.logout()">Logout</a>
+					<span class="logout"><a href="#" ng-click="$parent.logout()">Logout</a></span>
 				<div>
 					<input type="text" ng-model="name"/>
 					<input type="text" ng-model="last"/>
 					<button ng-click="addProfessional(name, [1])">Add</button>
 				</div>
 
-				<ui-gmap-google-map ng-if="loggedIn" center='map.center' zoom='map.zoom'></ui-gmap-google-map>
-				<button ng-click='forceRefreshMap()'>Refresh</button>
-
+				<select ng-model="filter_by_language">
+					<option value="0">Spanish</option>
+					<option value="1">English</option>
+					<option value="2">Chinese</option>
+				</select>
+				<div ng-model="location" locationpicker></div>
+				<input type="text" datepicker ng-model="selectedDate" />
+				<span>Selected location at : {{selectedLocation}}</span>
 				<table>
 					<th>
 
 					</th>
-					<tr ng-repeat="pro in listOfProfessionals">
+					<tr ng-repeat="pro in listOfProfessionals|language:filter_by_language|sort_by_distance:selectedLocation[0]:selectedLocation[1]">
 						<td>
 							{{$index}}
 						</td>
@@ -46,9 +74,6 @@
 							<ul>
 								<li ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}}</li>
 							</ul>
-						</td>
-						<td>
-							<button ng-controller="TaxProController" ng-click="deleteProfessional($index)">X</button>
 						</td>
 				</table>
 			</div>
