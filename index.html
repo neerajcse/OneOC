@@ -31,62 +31,72 @@
 				<div class="shadow"></div>
 			</div>
 			<div ng-show="loggedIn" ng-controller="TaxProController as tpController">
-				<div class="header">
-					Welcome, {{$parent.id}}
-					<span class="logout"><a href="#" ng-click="$parent.logout()">Logout</a></span>
+				<div ng-show="!completedWork">
+					<div class="header">
+						Welcome, {{$parent.id}}
+						<span class="logout"><a href="#" ng-click="$parent.logout()">Logout</a></span>
+					</div>
+					
+					<table>
+						<tr>
+							<td style="vertical-align:top">
+								<span> Please select a date:</span>
+								<input type="text" datepicker ng-model="selectedDate" />
+								<br>
+								<br>
+								<br>
+								<span> Do you have any language preferences?</span>
+								<select 
+								    ng-model="filter_by_language" 
+								    ng-options="l.value as l.name for l in spokenLanguageOptions">
+								</select>
+								<br>
+								<br>
+								<br>
+								<button ng-click="triggerSearch()">Search</button>
+							</td>
+							<td>
+								<!--This directive is used to set the location for the user-->
+								<span>Please select a location</span><br>
+								<div ng-model="location" locationpicker></div>
+								<span>Your selected location: {{selectedLocation}}</span>
+								<br>
+							</td>
+							
+						</tr>
+					</table>
+					
+					
+					<table class="responstable" ng-show="searchTriggered">
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+							<th>Languages</th>
+							<th>Selection</th>
+						</tr>
+						<tr ng-repeat="pro in listOfProfessionals|language:filter_by_language|sort_by_distance:selectedLocation[0]:selectedLocation[1]">
+							<td>
+								{{pro.id}}
+							</td>
+							<td>
+								{{pro.name}}
+							</td>
+							<td>
+								<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
+							</td>
+							<td>
+								<span class="selectProfessional" ng-click="selectProfessional(pro.id)">Make an appointment</span>
+							</td>
+						</tr>
+					</table>
 				</div>
-				
-				<table>
-					<tr>
-						<td style="vertical-align:top">
-							<span> Please select a date:</span>
-							<input type="text" datepicker ng-model="selectedDate" />
-							<br>
-							<br>
-							<br>
-							<span> Do you have any language preferences?</span>
-							<select 
-							    ng-model="filter_by_language" 
-							    ng-options="l.value as l.name for l in spokenLanguageOptions">
-							</select>
-							<br>
-							<br>
-							<br>
-							<button ng-click="triggerSearch()">Search</button>
-						</td>
-						<td>
-							<!--This directive is used to set the location for the user-->
-							<span>Please select a location</span><br>
-							<div ng-model="location" locationpicker></div>
-							<span>Your selected location: {{selectedLocation}}</span>
-							<br>
-						</td>
-						
-					</tr>
-				</table>
-				
-				
-				<table class="responstable" ng-show="searchTriggered">
-					<tr>
-						<th>ID</th>
-						<th>Name</th>
-						<th>Languages</th>
-						<th></th>
-					</tr>
-					<tr ng-repeat="pro in listOfProfessionals|language:filter_by_language|sort_by_distance:selectedLocation[0]:selectedLocation[1]">
-						<td>
-							{{pro.id}}
-						</td>
-						<td>
-							{{pro.name}}
-						</td>
-						<td>
-							<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
-						</td>
-						<td>
-							<span class="selectProfessional" ng-click="selectProfessional(pro.id)">Make an appointment</span>
-						</td>
-				</table>
+				<div ng-show="completedWork">
+					<span>
+						<h1>Congratulations</h1>
+						<h2>You have successfully scheudled an appointment with {{selectedProfessional}} on {{date}}</h2>
+						<h3>You have been logged out. <a href="javascript:location.reload()">Click here to login again.</a></h3>
+					</span>
+				</div>
 			</div>
 		</div>
 	</body>

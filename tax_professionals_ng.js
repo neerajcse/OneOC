@@ -79,6 +79,8 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 
 	
 	$scope.searchTriggered = false;
+	$scope.completedWork = false;
+	$scope.selectedProfessional = undefined;
 
 	/**
 	* This will not be used unless we decide to make an admin console.
@@ -99,9 +101,10 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 		console.log("Got " + id);
 		var r = confirm("Please confirm that you want to schedule a meeting with " + $scope.listOfProfessionals[id]['name']);
 		if (r == true) {
-		    x = "You pressed OK!";
+		   $scope.completedWork = true;
+		   $scope.selectedProfessional = $scope.listOfProfessionals[id]['name']; 
 		} else {
-		    x = "You pressed Cancel!";
+		    
 		}
 	}
 
@@ -131,6 +134,7 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 myApp.controller('LoginController', function($scope, TaxProDBService){
 	$scope.loggedIn = false;
 	$scope.notLoggedIn = true;
+
 
 	$scope.setLogin = function(uciID) {
 		$scope.loggedIn = true;
