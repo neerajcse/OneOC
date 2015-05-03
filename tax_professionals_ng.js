@@ -5,6 +5,8 @@ var myApp = angular.module('OneOC', []);
 */
 myApp.service('TaxProDBService', function(){
 
+	this.spokenLanguages = ["Spanish", "English", "Chinese"];
+
 	this.listOfProfessionals = [
 		{
 			'id' : 0,
@@ -40,10 +42,13 @@ myApp.service('TaxProDBService', function(){
 		return this.listOfProfessionals;
 	}
 
-	this.addProfessional = function(name, languages) {
+	this.addProfessional = function(name, languages, lat, lon, slots) {
 		this.listOfProfessionals.push({
+			'id': this.listOfProfessionals.length,
 			'name': name,
 			'languages': languages,
+			'slots': slots,
+			'loc' : [lat,lon]
 		});
 		return this.listOfProfessionals;	
 	};
@@ -55,13 +60,20 @@ myApp.service('TaxProDBService', function(){
 	};
 });
 
+
+
+
+
+/*********** CONTROLLERS BEGIN ************************/
+
+
 /**
 * This is the heart of the code. This handles pretty much everything around the logic.
 **/
 myApp.controller('TaxProController', function($scope, TaxProDBService){
 
 
-	$scope.spokenLanguages = ["Spanish", "English", "Chinese"];
+	$scope.spokenLanguages = TaxProDBService.spokenLanguages;
 	$scope.listOfProfessionals = TaxProDBService.getListOfProfessionals();
 
 	$scope.spokenLanguageOptions = [ 
@@ -82,20 +94,6 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 	$scope.completedWork = false;
 	$scope.selectedProfessional = undefined;
 
-	/**
-	* This will not be used unless we decide to make an admin console.
-	*/	
-	$scope.addProfessional = function(name, languages) {
-		$scope.listOfProfessionals = TaxProDBService.addProfessional(name, languages);
-	};
-
-	/**
-	* This will not be used unless we decide to make an admin console.
-	*/
-	$scope.deleteProfessional = function(atIndex) {
-		$scope.listOfProfessionals = TaxProDBService.deleteProfessional(atIndex);
-	};
-
 	$scope.selectProfessional = function(id) {
 		id = parseInt(id,10);
 		console.log("Got " + id);
@@ -107,7 +105,6 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 		    
 		}
 	}
-
 
 	/**
 	* This is called whenever the user select a point on the map.
@@ -125,6 +122,54 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 		$scope.searchTriggered = true;
 	}
 
+	$scope.logout = function(parentController) {
+		$scope.searchTriggered = false;
+		$scope.completedWork = false;
+		$scope.selectedProfessional = undefined;
+		parentController.logout();
+	}
+});
+
+myApp.controller('CRUDTaxProController', function($scope, TaxProDBService) {
+
+	$scope.user = {
+		'spokenlanguages' : []
+	};
+	
+	$scope.spokenLanguages = TaxProDBService.spokenLanguages;
+	$scope.listOfProfessionals = TaxProDBService.getListOfProfessionals();
+  	
+
+	/**
+	* This will not be used unless we decide to make an admin console.
+	*/	
+	$scope.addProfessional = function(name, languages, lat,lon, slots) {
+		$scope.listOfProfessionals = TaxProDBService.addProfessional(name, languages, lat, lon, slots);
+	};
+
+
+	$scope.submitForm = function() {
+      $scope.addProfessional($scope.user.name, $scope.user.spokenlanguages, $scope.user.lat, $scope.user.lon, [$scope.user.date]);
+      $scope.user = {
+		'spokenlanguages' : []
+	  };
+      
+    };
+
+	$scope.toggleSelection = function(language) {
+	   var idx = $scope.spokenLanguages.indexOf(language);
+	   var exists = $scope.user.spokenlanguages.indexOf(idx);
+	   // is currently selected
+	   if (exists > -1) {
+	     $scope.user.spokenlanguages.splice(exists, 1);
+	   } else {
+	     $scope.user.spokenlanguages.push(idx);
+	   }
+	};
+
+	$scope.logout = function(parent, grandparent) {
+		parent.logout(grandparent);
+	}
 });
 
 /**
@@ -146,6 +191,12 @@ myApp.controller('LoginController', function($scope, TaxProDBService){
 		$scope.loggedIn = false;
 	};
 });
+
+
+
+
+
+/*********** FILTERS BEGIN ************************/
 
 /** DO NOT TOUCH THIS UNTIL YOU'VE READ ABOUT ANGULARJS FILTERS**/
 myApp.filter('language', function() {
@@ -205,6 +256,19 @@ myApp.filter('sort_by_distance', function() {
 	}
 });
 
+
+myApp.filter('reverse', function() {
+  return function(items) {
+    return items.slice().reverse();
+  };
+});
+
+
+
+
+
+/*********** DIRECTIVES BEGIN ************************/
+
 /** DO NOT TOUCH THIS UNTIL YOU'VE READ ABOUT ANGULARJS DIRECTIVES**/
 myApp.directive('datepicker', function() {
     return {
@@ -251,3 +315,4 @@ myApp.directive('locationpicker', function($compile) {
         }
     }
 });
+

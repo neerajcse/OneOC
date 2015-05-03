@@ -24,78 +24,165 @@
 			</div>
 			<div  class="loginPane" ng-show="!loggedIn">
 				<div class="login">
-				    <input type="text" ng-model="uciID" placeholder="Username" id="username">  
-				 	 <input type="password" placeholder="password" id="password">  
-				 	<input type="submit" value="Sign In" ng-click="setLogin(uciID)">
+					
+				    	<input type="text" ng-model="uciID" placeholder="Username" id="username">  
+				 		<input type="password" placeholder="password" id="password">  
+				 		<input type="submit" value="Sign In" ng-click="setLogin(uciID)">
+				 		<div>
+				 		</div>
+				
 				</div>
 				<div class="shadow"></div>
 			</div>
 			<div ng-show="loggedIn" ng-controller="TaxProController as tpController">
-				<div ng-show="!completedWork">
-					<div class="header">
-						Welcome, {{$parent.id}}
-						<span class="logout"><a href="#" ng-click="$parent.logout()">Logout</a></span>
+				<div ng-show="uciID!=='admin'">
+					<div ng-show="!completedWork">
+						<div class="header">
+							Welcome, {{$parent.id}}
+							<span class="logout"><a href="#" ng-click="logout($parent)">Logout</a></span>
+						</div>
+						
+						<table>
+							<tr>
+								<td style="vertical-align:top">
+									<span> Please select a date:</span>
+									<input type="text" datepicker ng-model="selectedDate" />
+									<br>
+									<br>
+									<br>
+									<span> Do you have any language preferences?</span>
+									<select 
+									    ng-model="filter_by_language" 
+									    ng-options="l.value as l.name for l in spokenLanguageOptions">
+									</select>
+									<br>
+									<br>
+									<br>
+									<button ng-click="triggerSearch()">Search</button>
+								</td>
+								<td>
+									<!--This directive is used to set the location for the user-->
+									<span>Please select a location</span><br>
+									<div ng-model="location" locationpicker></div>
+									<span>Your selected location: {{selectedLocation}}</span>
+									<br>
+								</td>
+								
+							</tr>
+						</table>
+						
+						
+						<table class="responstable" ng-show="searchTriggered">
+							<tr>
+								<th>ID</th>
+								<th>Name</th>
+								<th>Languages</th>
+								<th>Selection</th>
+							</tr>
+							<tr ng-repeat="pro in listOfProfessionals|language:filter_by_language|sort_by_distance:selectedLocation[0]:selectedLocation[1]">
+								<td>
+									{{pro.id}}
+								</td>
+								<td>
+									{{pro.name}}
+								</td>
+								<td>
+									<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
+								</td>
+								<td>
+									<span class="selectProfessional" ng-click="selectProfessional(pro.id)">Make an appointment</span>
+								</td>
+							</tr>
+						</table>
 					</div>
-					
-					<table>
-						<tr>
-							<td style="vertical-align:top">
-								<span> Please select a date:</span>
-								<input type="text" datepicker ng-model="selectedDate" />
-								<br>
-								<br>
-								<br>
-								<span> Do you have any language preferences?</span>
-								<select 
-								    ng-model="filter_by_language" 
-								    ng-options="l.value as l.name for l in spokenLanguageOptions">
-								</select>
-								<br>
-								<br>
-								<br>
-								<button ng-click="triggerSearch()">Search</button>
-							</td>
-							<td>
-								<!--This directive is used to set the location for the user-->
-								<span>Please select a location</span><br>
-								<div ng-model="location" locationpicker></div>
-								<span>Your selected location: {{selectedLocation}}</span>
-								<br>
-							</td>
-							
-						</tr>
-					</table>
-					
-					
-					<table class="responstable" ng-show="searchTriggered">
-						<tr>
-							<th>ID</th>
-							<th>Name</th>
-							<th>Languages</th>
-							<th>Selection</th>
-						</tr>
-						<tr ng-repeat="pro in listOfProfessionals|language:filter_by_language|sort_by_distance:selectedLocation[0]:selectedLocation[1]">
-							<td>
-								{{pro.id}}
-							</td>
-							<td>
-								{{pro.name}}
-							</td>
-							<td>
-								<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
-							</td>
-							<td>
-								<span class="selectProfessional" ng-click="selectProfessional(pro.id)">Make an appointment</span>
-							</td>
-						</tr>
-					</table>
+					<div ng-show="completedWork">
+						<span>
+							<h1>Congratulations</h1>
+							<h2>You have successfully scheudled an appointment with {{selectedProfessional}} on {{date}}</h2>
+							<h3>You have been logged out. <span class="logout"><a href="#" ng-click="logout($parent)">Login Again</a></span></h3>
+						</span>
+					</div>
 				</div>
-				<div ng-show="completedWork">
-					<span>
-						<h1>Congratulations</h1>
-						<h2>You have successfully scheudled an appointment with {{selectedProfessional}} on {{date}}</h2>
-						<h3>You have been logged out. <a href="javascript:location.reload()">Click here to login again.</a></h3>
-					</span>
+				<div ng-show="uciID=='admin'" ng-controller='CRUDTaxProController'>
+					<div class="header">
+							Welcome, {{$parent.id}}
+							<span class="logout"><a href="#" ng-click="logout($parent, $parent.$parent)">Logout</a></span>
+					</div>
+					<div class="login">
+						<form name="userForm" ng-submit="submitForm()" novalidate>
+				    		
+				    		<input class="form-control" type="text"  name="name" ng-model="user.name" placeholder="Name" id="name" required>
+				    		<div role="alert" ng-show="userForm.name.$dirty">
+						      <span class="error" ng-show="userForm.name.$error.required">
+						        Name required</span>
+						    </div>
+
+				    		<input class="form-control" type="email" name="email" ng-model="user.email" placeholder="Email" id="email" required>
+				    		<div role="alert" ng-show="userForm.email.$dirty">
+						      <span class="error" ng-show="userForm.email.$error.required">
+						        Email field required</span>
+						      <span class="error" ng-show="userForm.email.$error.email">
+						        Please enter valid email id.</span>
+						    </div>
+
+				    		<input class="form-control" type="number" name="lat" min="1" max="10" ng-model="user.lat" placeholder="location:latitude" id="latitude" required>
+				    		<div role="alert" ng-show="userForm.lat.$dirty">
+						      <span class="error" ng-show="userForm.lat.$error.required">
+						        Latitude required</span>
+						      <span class="error" ng-show="!userForm.lat.$valid">
+						        Please enter a number between 1 and 10</span>
+						    </div>
+
+				 			<input class="form-control" name="lon" type="number" min="1" max="10" ng-model="user.lon" placeholder="location:longitude" id="longitude" required>
+				 			<div role="alert" ng-show="userForm.lon.$dirty">
+						      <span class="error" ng-show="userForm.lon.$error.required">
+						        Latitude required</span>
+						      <span class="error" ng-show="!userForm.lon.$valid">
+						        Please enter a number between 1 and 10</span>
+						    </div>
+				 			
+				 			<input class="form-control" name="date" type="date" ng-model="user.date" id="date" required>
+				 			<div role="alert" ng-show="userForm.date.$dirty">
+						      <span class="error" ng-show="userForm.date.$error.required">
+						        Latitude required</span>
+						    </div>
+
+						    <label>Languages spoken</label><br>
+						    <label ng-repeat="language in spokenLanguages">
+							  <input type="checkbox"
+							    name="selectedLanguages[]"
+							    value="{{language}}"
+							    ng-checked="selection.indexOf(language) > -1"
+							    ng-click="toggleSelection(language)"> {{language}}
+							</label>
+
+				 			<input ng-show="userForm.$valid" type="submit" value="Add Professional"/>
+				 		
+						</form>
+					</div>
+
+					<table class="responstable">
+							<tr>
+								<th>ID</th>
+								<th>Name</th>
+								<th>Languages</th>
+								<th>Location</th>
+							</tr>
+							<tr ng-repeat="pro in listOfProfessionals|reverse">
+								<td>
+									{{pro.id}}
+								</td>
+								<td>
+									{{pro.name}}
+								</td>
+								<td>
+									<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
+								</td>
+								<td>
+									<span>{{pro.loc}}</span>
+								</td>
+							</tr>
+						</table>
 				</div>
 			</div>
 		</div>
