@@ -1,62 +1,69 @@
-var myApp = angular.module('OneOC', []);
+var myApp = angular.module('OneOC', ['ngStorage']);
 
 /**
 * TOUCH THIS ONLY IF YOU WANT TO ADD PROFESSIONALS TO THE LIST.
 */
-myApp.service('TaxProDBService', function(){
+myApp.service('TaxProDBService', function($localStorage){
+
+	this.storage = $localStorage.$default({
+    	listOfProfessionals: [
+			{
+				'id' : 0,
+				'name': 'John Doe',
+				'loc': [4,5],
+				'slots':['04/28 1-2'],
+				'languages' : [0,1],
+			},
+			{
+				'id' : 1,
+				'name': 'Gloria Fitzgerald',
+				'loc':[1,1],
+				'slots':['04/28 3-4'],
+				'languages': [1],
+			},
+			{
+				'id' : 2,
+				'name': 'Kim Shi',
+				'loc':[5,6], 
+				'slots':['04/28 5-6'],
+				'languages': [1,2],
+			},
+			{
+				'id' : 3,
+				'name': 'Oliver Mark',
+				'loc':[5,6], 
+				'slots':['04/28 5-6'],
+				'languages': [1,2],
+			},
+		]
+	});
+
 
 	this.spokenLanguages = ["Spanish", "English", "Chinese"];
 
-	this.listOfProfessionals = [
-		{
-			'id' : 0,
-			'name': 'John Doe',
-			'loc': [4,5],
-			'slots':['04/28 1-2'],
-			'languages' : [0,1],
-		},
-		{
-			'id' : 1,
-			'name': 'Gloria Fitzgerald',
-			'loc':[1,1],
-			'slots':['04/28 3-4'],
-			'languages': [1],
-		},
-		{
-			'id' : 2,
-			'name': 'Kim Shi',
-			'loc':[5,6], 
-			'slots':['04/28 5-6'],
-			'languages': [1,2],
-		},
-		{
-			'id' : 3,
-			'name': 'Oliver Mark',
-			'loc':[5,6], 
-			'slots':['04/28 5-6'],
-			'languages': [1,2],
-		},
-	];
-
+	
 	this.getListOfProfessionals = function() {
-		return this.listOfProfessionals;
+		return this.storage.listOfProfessionals;
 	}
 
 	this.addProfessional = function(name, languages, lat, lon, slots) {
-		this.listOfProfessionals.push({
-			'id': this.listOfProfessionals.length,
+		this.storage.listOfProfessionals.push({
+			'id': this.storage.listOfProfessionals.length,
 			'name': name,
 			'languages': languages,
 			'slots': slots,
 			'loc' : [lat,lon]
 		});
-		return this.listOfProfessionals;	
+
+		//$localStorage.setItem("listOfProfessionals", this.listOfProfessionals);
+
+		return this.storage.listOfProfessionals;	
 	};
 
 	this.deleteProfessional = function(atIndex) {
 		console.log(atIndex);
-		this.listOfProfessionals.splice(atIndex, 1);
-		return this.listOfProfessionals;
+		this.storage.listOfProfessionals.splice(atIndex, 1);
+		return this.storage.listOfProfessionals;
 	};
 });
 
