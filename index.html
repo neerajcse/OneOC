@@ -47,15 +47,17 @@
 							<tr>
 								<td style="vertical-align:top">
 									<span> Please select a date:</span>
-									<input type="text" datepicker ng-model="selectedDate" />
-									<br>
-									<br>
+									<input class="form-control" placeholder="Availability" name="date" type="date" ng-model="selectedDate" id="date" required>
 									<br>
 									<span> Do you have any language preferences?</span>
-									<select 
-									    ng-model="filter_by_language" 
-									    ng-options="l.value as l.name for l in spokenLanguageOptions">
-									</select>
+									<label ng-repeat="language in spokenLanguages">
+									  <input type="checkbox"
+									    name="selectedLanguages[]"
+									    value="{{language}}"
+									    ng-checked="selection.indexOf(language) > -1"
+									    ng-click="toggleSelection(language)"> {{language}}
+									</label>
+								
 									<br>
 									<br>
 									<br>
@@ -77,21 +79,29 @@
 							<tr>
 								<th>ID</th>
 								<th>Name</th>
+								<th>Email</th>
+								<th>Availability</th>
 								<th>Languages</th>
+								<th>Location</th>
+								<th>PF</th>
+								<th>Score</th>
 								<th>Selection</th>
 							</tr>
-							<tr ng-repeat="pro in listOfProfessionals|language:filter_by_language|sort_by_distance:selectedLocation[0]:selectedLocation[1]">
+							<tr ng-repeat="pro in listOfProfessionals|match_factor:filter_by_language:selectedDate:selectedLocation[0]:selectedLocation[1]|reverse">
+								<td>{{pro.id}}</td>
+								<td>{{pro.name}}</td>
+								<td>{{pro.email}}</td>
 								<td>
-									{{pro.id}}
-								</td>
-								<td>
-									{{pro.name}}
+									<span ng-repeat="slot in pro.slots">{{slot}},</span>
 								</td>
 								<td>
 									<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
 								</td>
+								<td>{{pro.loc}}</td>
+								<td>{{pro.pf}}</td>
+								<td>{{pro.score}}</td>
 								<td>
-									<span class="selectProfessional" ng-click="selectProfessional(pro.id)">Make an appointment</span>
+									<span class="selectProfessional" ng-click="selectProfessional(pro.id)">Schedule</span>
 								</td>
 							</tr>
 						</table>
@@ -99,7 +109,7 @@
 					<div ng-show="completedWork">
 						<span>
 							<h1>Congratulations</h1>
-							<h2>You have successfully scheudled an appointment with {{selectedProfessional}} on {{date}}</h2>
+							<h2>You have successfully scheduled an appointment with {{selectedProfessional}} on {{date}}</h2>
 							<h3>You have been logged out. <span class="logout"><a href="#" ng-click="logout($parent)">Login Again</a></span></h3>
 						</span>
 					</div>
@@ -110,6 +120,7 @@
 							<span class="logout"><a href="#" ng-click="logout($parent, $parent.$parent)">Logout</a></span>
 					</div>
 					<div class="login">
+						<h3> Add Tax Professional</h3>
 						<form name="userForm" ng-submit="submitForm()" novalidate>
 				    		
 				    		<input class="form-control" type="text"  name="name" ng-model="user.name" placeholder="Name" id="name" required>
@@ -142,10 +153,11 @@
 						        Please enter a number between 1 and 10</span>
 						    </div>
 				 			
-				 			<input class="form-control" name="date" type="date" ng-model="user.date" id="date" required>
+
+				 			<input class="form-control" placeholder="Availability" name="date" type="date" ng-model="user.date" id="date" required>
 				 			<div role="alert" ng-show="userForm.date.$dirty">
 						      <span class="error" ng-show="userForm.date.$error.required">
-						        Latitude required</span>
+						        Date required</span>
 						    </div>
 
 						    <label>Languages spoken</label><br>
@@ -157,6 +169,14 @@
 							    ng-click="toggleSelection(language)"> {{language}}
 							</label>
 
+							<input class="form-control" name="pf" type="number" min="1" max="3" ng-model="user.pf" placeholder="Promotional Factor" id="pf" required>
+				 			<div role="alert" ng-show="userForm.pf.$dirty">
+						      <span class="error" ng-show="userForm.pf.$error.required">
+						        Promotional Factor required</span>
+						      <span class="error" ng-show="!userForm.pf.$valid">
+						        Please enter a number between 1 and 3</span>
+						    </div>
+
 				 			<input ng-show="userForm.$valid" type="submit" value="Add Professional"/>
 				 		
 						</form>
@@ -166,22 +186,22 @@
 							<tr>
 								<th>ID</th>
 								<th>Name</th>
+								<th>Email</th>
 								<th>Languages</th>
+								<th>Availablility</th>
 								<th>Location</th>
+								<th>Promotional Factor</th>
 							</tr>
 							<tr ng-repeat="pro in listOfProfessionals|reverse">
-								<td>
-									{{pro.id}}
-								</td>
-								<td>
-									{{pro.name}}
-								</td>
+								<td>{{pro.id}}</td>
+								<td>{{pro.name}}</td>
+								<td>{{pro.email}}</td>
 								<td>
 									<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
 								</td>
-								<td>
-									<span>{{pro.loc}}</span>
-								</td>
+								<td><span ng-repeat="slot in pro.slots">{{slot}},</span>
+								<td><span>{{pro.loc}}</span></td>
+								<td>{{pro.pf}}</td>
 							</tr>
 						</table>
 				</div>

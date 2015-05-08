@@ -8,32 +8,40 @@ myApp.service('TaxProDBService', function($localStorage){
 	this.storage = $localStorage.$default({
     	listOfProfessionals: [
 			{
-				'id' : 0,
+				'id' : 1000,
+				'email': 'johndoe@tax.org',
 				'name': 'John Doe',
 				'loc': [4,5],
-				'slots':['04/28 1-2'],
+				'slots':['04/28/2015'],
 				'languages' : [0,1],
+				'pf': 1,
 			},
 			{
-				'id' : 1,
+				'id' : 1001,
+				'email': 'gfitz@tax.org',
 				'name': 'Gloria Fitzgerald',
 				'loc':[1,1],
-				'slots':['04/28 3-4'],
+				'slots':['04/29/2015'],
 				'languages': [1],
+				'pf': 1,
 			},
 			{
-				'id' : 2,
+				'id' : 1002,
+				'email': 'shi@tax.org',
 				'name': 'Kim Shi',
 				'loc':[5,6], 
-				'slots':['04/28 5-6'],
+				'slots':['04/30/2015'],
 				'languages': [1,2],
+				'pf': 1,
 			},
 			{
-				'id' : 3,
+				'id' : 1003,
+				'email': 'omark@tax.org',
 				'name': 'Oliver Mark',
 				'loc':[5,6], 
-				'slots':['04/28 5-6'],
+				'slots':['04/21/2015'],
 				'languages': [1,2],
+				'pf': 1,
 			},
 		]
 	});
@@ -46,18 +54,19 @@ myApp.service('TaxProDBService', function($localStorage){
 		return this.storage.listOfProfessionals;
 	}
 
-	this.addProfessional = function(name, languages, lat, lon, slots) {
+	this.addProfessional = function(name, languages, lat, lon, slots, email, pf) {
 		this.storage.listOfProfessionals.push({
-			'id': this.storage.listOfProfessionals.length,
+			'id': this.storage.listOfProfessionals.length + 1000,
+			'email': email,
 			'name': name,
 			'languages': languages,
 			'slots': slots,
-			'loc' : [lat,lon]
+			'loc' : [lat,lon],
+			'pf' : pf,
 		});
-
+		alert("New professional added successfully.")
 		//$localStorage.setItem("listOfProfessionals", this.listOfProfessionals);
-
-		return this.storage.listOfProfessionals;	
+		return this.storage.listOfProfessionals;
 	};
 
 	this.deleteProfessional = function(atIndex) {
@@ -95,6 +104,7 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 	// Data stored related to map and selected cells on the map
 	$scope.selectedLocation = [0, 0];
 	$scope.selectedMapCell = undefined;
+	$scope.selectedLanguages = [];
 
 	
 	$scope.searchTriggered = false;
@@ -102,7 +112,7 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 	$scope.selectedProfessional = undefined;
 
 	$scope.selectProfessional = function(id) {
-		id = parseInt(id,10);
+		id = parseInt(id - 1000,10);
 		console.log("Got " + id);
 		var r = confirm("Please confirm that you want to schedule a meeting with " + $scope.listOfProfessionals[id]['name']);
 		if (r == true) {
@@ -135,9 +145,20 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 		$scope.selectedProfessional = undefined;
 		parentController.logout();
 	}
+
+	$scope.toggleSelection = function(language) {
+	   var idx = $scope.spokenLanguages.indexOf(language);
+	   var exists = $scope.selectedLanguages.indexOf(idx);
+	   // is currently selected
+	   if (exists > -1) {
+	     $scope.selectedLanguages.splice(exists, 1);
+	   } else {
+	     $scope.selectedLanguages.push(idx);
+	   }
+	};
 });
 
-myApp.controller('CRUDTaxProController', function($scope, TaxProDBService) {
+myApp.controller('CRUDTaxProController', function($scope, $filter, TaxProDBService) {
 
 	$scope.user = {
 		'spokenlanguages' : []
@@ -150,17 +171,18 @@ myApp.controller('CRUDTaxProController', function($scope, TaxProDBService) {
 	/**
 	* This will not be used unless we decide to make an admin console.
 	*/	
-	$scope.addProfessional = function(name, languages, lat,lon, slots) {
-		$scope.listOfProfessionals = TaxProDBService.addProfessional(name, languages, lat, lon, slots);
+	$scope.addProfessional = function(name, languages, lat,lon, slots, email, pf) {
+		$scope.listOfProfessionals = TaxProDBService.addProfessional(name, languages, lat, lon, slots, email, parseInt(pf,10));
 	};
 
 
 	$scope.submitForm = function() {
-      $scope.addProfessional($scope.user.name, $scope.user.spokenlanguages, $scope.user.lat, $scope.user.lon, [$scope.user.date]);
-      $scope.user = {
-		'spokenlanguages' : []
-	  };
-      
+		var formattedDate = $filter('date')($scope.user.date, "MM/dd/yyyy");
+      	$scope.addProfessional($scope.user.name, $scope.user.spokenlanguages, $scope.user.lat, $scope.user.lon, [formattedDate], $scope.user.email, $scope.user.pf);
+      	$scope.user = {
+			'spokenlanguages' : []
+	  	};
+	  	$scope.userForm.$setPristine() 
     };
 
 	$scope.toggleSelection = function(language) {
@@ -201,9 +223,64 @@ myApp.controller('LoginController', function($scope, TaxProDBService){
 
 
 
-
-
 /*********** FILTERS BEGIN ************************/
+
+myApp.filter('match_factor', function(){
+	return function(professionals, languages, date, lat, lon) {
+		var distance = function(x1, y1, x2, y2) {
+			var a = x1 - x2;
+			var b = y1 - y2;
+			return Math.sqrt( a*a + b*b ); 
+		}
+
+		var match_factor_comparator = function(a,b) {
+		  return a.score > b.score;
+		}
+
+		var clone = professionals.slice(0);
+
+		for(var i=0; i<clone.length; i++) {
+			var score = 0;
+			var professional = clone[i];
+			if(professional.pf == 2) {
+				score += 3;
+			}
+			if(professional.pf == 3) {
+				score += 7;
+			}
+			for (var i=0; i <languages.length; i++) {
+				var language = languages[i];
+				if ( professional.languages.indexOf(language) > -1) {
+					score += 10;
+				}	
+			}
+			
+			if(	professional.slots.indexOf(date) > -1 ) {
+				score += 20;
+			}
+			score += 3 * ( 15 - Math.ceil(distance(lat, lon, professional.loc[0], professional.loc[1])) );
+			clone[i]['score'] = score;
+		}
+
+
+		for(var i=1; i<11; i++) {
+			for(var j=1; j<11; j++) {
+				var el = angular.element(document.querySelector("#mapCell-"+i+"-"+j));
+				el.removeClass("pro");		
+			}			
+		}
+
+		for(var i=0; i<clone.length; i++) {
+			var pro = clone[i];
+			lat = pro.loc[0];
+			lon = pro.loc[1];
+			el = angular.element(document.querySelector("#mapCell-"+lat+"-"+lon));
+			el.addClass("pro");
+		}
+
+		return clone.sort(match_factor_comparator);
+	}
+});
 
 /** DO NOT TOUCH THIS UNTIL YOU'VE READ ABOUT ANGULARJS FILTERS**/
 myApp.filter('language', function() {
