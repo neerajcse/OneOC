@@ -225,8 +225,11 @@ myApp.controller('LoginController', function($scope, TaxProDBService){
 
 /*********** FILTERS BEGIN ************************/
 
-myApp.filter('match_factor', function(){
-	return function(professionals, languages, date, lat, lon) {
+myApp.filter('match_factor', function($filter){
+	return function(professionals, selected_languages, date, lat, lon) {
+		var formattedDate = $filter('date')(date, "MM/dd/yyyy");
+		console.log("Date is " + formattedDate);
+		
 		var distance = function(x1, y1, x2, y2) {
 			var a = x1 - x2;
 			var b = y1 - y2;
@@ -248,14 +251,13 @@ myApp.filter('match_factor', function(){
 			if(professional.pf == 3) {
 				score += 7;
 			}
-			for (var i=0; i <languages.length; i++) {
-				var language = languages[i];
-				if ( professional.languages.indexOf(language) > -1) {
+			for(var l=0;l<selected_languages.length;l++) {
+				if(professional.languages.indexOf(selected_languages[l]) > -1) {
 					score += 10;
-				}	
+				}
 			}
 			
-			if(	professional.slots.indexOf(date) > -1 ) {
+			if(	professional.slots.indexOf(formattedDate) > -1 ) {
 				score += 20;
 			}
 			score += 3 * ( 15 - Math.ceil(distance(lat, lon, professional.loc[0], professional.loc[1])) );
@@ -361,9 +363,9 @@ myApp.directive('datepicker', function() {
         link : function (scope, element, attrs, ngModelCtrl) {
         	$(function(){
                 element.datepicker({
-                    dateFormat:'dd/mm/yy',
+                    dateFormat:'mm/dd/yy',
                     onSelect:function (date) {
-                    	scope.date = date;
+                    	scope.date = date.getMonth() + "/" + date.getDate() + "/" + date.getYear();
                        	scope.$apply();
                     }
                 });

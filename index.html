@@ -87,7 +87,7 @@
 								<th>Score</th>
 								<th>Selection</th>
 							</tr>
-							<tr ng-repeat="pro in listOfProfessionals|match_factor:filter_by_language:selectedDate:selectedLocation[0]:selectedLocation[1]|reverse">
+							<tr ng-repeat="pro in listOfProfessionals|match_factor:selectedLanguages:selectedDate:selectedLocation[0]:selectedLocation[1]|reverse">
 								<td>{{pro.id}}</td>
 								<td>{{pro.name}}</td>
 								<td>{{pro.email}}</td>
