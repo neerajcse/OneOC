@@ -13,6 +13,7 @@ myApp.service('TaxProDBService', function($localStorage){
 				'name': 'John Doe',
 				'loc': [4,5],
 				'slots':['04/28/2015'],
+				'time': 0,
 				'languages' : [0,1],
 				'pf': 1,
 			},
@@ -22,6 +23,7 @@ myApp.service('TaxProDBService', function($localStorage){
 				'name': 'Gloria Fitzgerald',
 				'loc':[1,1],
 				'slots':['04/29/2015'],
+				'time': 1,
 				'languages': [1],
 				'pf': 1,
 			},
@@ -32,6 +34,7 @@ myApp.service('TaxProDBService', function($localStorage){
 				'loc':[5,6], 
 				'slots':['04/30/2015'],
 				'languages': [1,2],
+				'time': 2,	
 				'pf': 1,
 			},
 			{
@@ -40,6 +43,7 @@ myApp.service('TaxProDBService', function($localStorage){
 				'name': 'Oliver Mark',
 				'loc':[5,6], 
 				'slots':['04/21/2015'],
+				'time': 3,
 				'languages': [1,2],
 				'pf': 1,
 			},
@@ -48,23 +52,40 @@ myApp.service('TaxProDBService', function($localStorage){
 
 
 	this.spokenLanguages = ["Spanish", "English", "Chinese"];
+	this.timeSlots = ["Morning", "Afternoon", "Evening", "Late Evening"];
 
 	
 	this.getListOfProfessionals = function() {
 		return this.storage.listOfProfessionals;
 	}
 
-	this.addProfessional = function(name, languages, lat, lon, slots, email, pf) {
+	this.addProfessional = function(name, languages, lat, lon, slots, email, pf, id, timeSlot) {
+		var isEditing = id != (undefined || null);
+		if(isEditing) {
+			for(var i=0;i<this.storage.listOfProfessionals.length;i++) {
+				var pro = this.storage.listOfProfessionals[i];
+				if(pro.id == id) {
+					this.deleteProfessional(i);
+					break;
+				}
+			}
+		}
 		this.storage.listOfProfessionals.push({
-			'id': this.storage.listOfProfessionals.length + 1000,
+			'id': isEditing ? parseInt(id,10) : this.storage.listOfProfessionals.length + 1000,
 			'email': email,
 			'name': name,
 			'languages': languages,
 			'slots': slots,
 			'loc' : [lat,lon],
 			'pf' : pf,
+			'time': timeSlot.value,
 		});
-		alert("New professional added successfully.")
+		if (isEditing) {
+			alert("Details for " + pro.name + " edited successfully.");
+		} else {
+			alert("New professional added successfully.")
+		}
+		
 		//$localStorage.setItem("listOfProfessionals", this.listOfProfessionals);
 		return this.storage.listOfProfessionals;
 	};
@@ -76,10 +97,6 @@ myApp.service('TaxProDBService', function($localStorage){
 	};
 });
 
-
-
-
-
 /*********** CONTROLLERS BEGIN ************************/
 
 
@@ -90,6 +107,7 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 
 
 	$scope.spokenLanguages = TaxProDBService.spokenLanguages;
+	$scope.timeSlots = TaxProDBService.timeSlots;
 	$scope.listOfProfessionals = TaxProDBService.getListOfProfessionals();
 
 	$scope.spokenLanguageOptions = [ 
@@ -98,15 +116,21 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 		{ name: 'English' , value:1 },
 		{ name: 'Chinese' , value:2 },
 	];
-	$scope.filter_by_language = -1;
 
+	$scope.timeSlotOptions = [ 
+		{ name: 'Morning'	, value:0 },
+		{ name: 'Afternoon' , value:1 },
+		{ name: 'Evening' , value:2 },
+		{ name: 'Late Evening' , value:3 },
+	];
 
+	
 	// Data stored related to map and selected cells on the map
 	$scope.selectedLocation = [0, 0];
 	$scope.selectedMapCell = undefined;
 	$scope.selectedLanguages = [];
+	$scope.selectedTimeSlot =  $scope.timeSlotOptions[0];;
 
-	
 	$scope.searchTriggered = false;
 	$scope.completedWork = false;
 	$scope.selectedProfessional = undefined;
@@ -166,23 +190,30 @@ myApp.controller('CRUDTaxProController', function($scope, $filter, TaxProDBServi
 	
 	$scope.spokenLanguages = TaxProDBService.spokenLanguages;
 	$scope.listOfProfessionals = TaxProDBService.getListOfProfessionals();
-  	
+	$scope.timeSlotOptions = [ 
+		{ name: 'Morning'	, value:0 },
+		{ name: 'Afternoon' , value:1 },
+		{ name: 'Evening' , value:2 },
+		{ name: 'Late Evening' , value:3 },
+	];
+
+  	$scope.user.selectedTimeSlot = $scope.timeSlotOptions[0];
 
 	/**
 	* This will not be used unless we decide to make an admin console.
 	*/	
-	$scope.addProfessional = function(name, languages, lat,lon, slots, email, pf) {
-		$scope.listOfProfessionals = TaxProDBService.addProfessional(name, languages, lat, lon, slots, email, parseInt(pf,10));
+	$scope.addProfessional = function(name, languages, lat,lon, slots, email, pf, id, timeSlot) {
+		$scope.listOfProfessionals = TaxProDBService.addProfessional(name, languages, lat, lon, slots, email, parseInt(pf,10), id, timeSlot);
 	};
 
 
 	$scope.submitForm = function() {
 		var formattedDate = $filter('date')($scope.user.date, "MM/dd/yyyy");
-      	$scope.addProfessional($scope.user.name, $scope.user.spokenlanguages, $scope.user.lat, $scope.user.lon, [formattedDate], $scope.user.email, $scope.user.pf);
+      	$scope.addProfessional($scope.user.name, $scope.user.spokenlanguages, $scope.user.lat, $scope.user.lon, [formattedDate], $scope.user.email, $scope.user.pf, $scope.user.id, $scope.user.selectedTimeSlot);
       	$scope.user = {
 			'spokenlanguages' : []
 	  	};
-	  	$scope.userForm.$setPristine() 
+	  	$scope.userForm.$setPristine();
     };
 
 	$scope.toggleSelection = function(language) {
@@ -198,6 +229,27 @@ myApp.controller('CRUDTaxProController', function($scope, $filter, TaxProDBServi
 
 	$scope.logout = function(parent, grandparent) {
 		parent.logout(grandparent);
+	}
+
+	$scope.editProfessional = function(id) {
+		console.log("Editing pro " + id)
+		for(var i=0;i<$scope.listOfProfessionals.length;i++) {
+			var pro = $scope.listOfProfessionals[i];
+			if (pro.id == id) {
+				$scope.user.name = pro.name;
+				$scope.user.spokenLanguages = pro.languages;
+				$scope.user.lat = pro.loc[0];
+				$scope.user.lon = pro.loc[1];
+				$scope.user.email = pro.email;
+				var dateSplit = pro.slots[0].split("/");
+				$scope.user.date = new Date(dateSplit[2] + "-" + dateSplit[0] + "-" + dateSplit[1]);
+				$scope.user.pf = pro.pf;
+				$scope.user.id = pro.id;
+				$scope.user.selectedTimeSlot = $scope.timeSlotOptions[pro.time];
+				//TaxProDBService.deleteProfessional(i,1);
+			}
+		}
+
 	}
 });
 
@@ -226,10 +278,11 @@ myApp.controller('LoginController', function($scope, TaxProDBService){
 /*********** FILTERS BEGIN ************************/
 
 myApp.filter('match_factor', function($filter){
-	return function(professionals, selected_languages, date, lat, lon) {
+	return function(professionals, selected_languages, date, lat, lon, selectedTime) {
 		var formattedDate = $filter('date')(date, "MM/dd/yyyy");
 		console.log("Date is " + formattedDate);
-		
+		console.log("Selected time slot is " + selectedTime.value);
+
 		var distance = function(x1, y1, x2, y2) {
 			var a = x1 - x2;
 			var b = y1 - y2;
@@ -258,7 +311,10 @@ myApp.filter('match_factor', function($filter){
 			}
 			
 			if(	professional.slots.indexOf(formattedDate) > -1 ) {
-				score += 20;
+				score += 12;
+			}
+			if(professional.time == selectedTime.value) {
+				score += 8;
 			}
 			score += 3 * ( 15 - Math.ceil(distance(lat, lon, professional.loc[0], professional.loc[1])) );
 			clone[i]['score'] = score;
@@ -348,8 +404,6 @@ myApp.filter('reverse', function() {
     return items.slice().reverse();
   };
 });
-
-
 
 
 
