@@ -12,6 +12,9 @@ body {
 				position:relative;
 }
 
+.alert {
+  display: inline-block;
+}
 
 .logout {
   float:right;
@@ -65,7 +68,7 @@ html { height: 100% }
   border-radius: 6px;
   height: auto;
   margin: 20px auto 0;
-  width: 298px;
+  width: 100%;
 }
 
 .login div {
@@ -85,6 +88,11 @@ html { height: 100% }
   text-align: center;
   text-shadow: 0 -1px 0 rgba(0,0,0,0.2), 0 1px 0 #fff;
 }
+
+.login h3 {
+  text-align: center;
+}
+
 input[type="password"], input[type="text"], [type="number"], input[type="date"], input[type="email"], select {
   border: 1px solid #a1a3a3;
   border-radius: 4px;

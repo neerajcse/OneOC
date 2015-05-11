@@ -83,7 +83,6 @@
 								<th>Name</th>
 								<th>Email</th>
 								<th>Availability</th>
-								<th>Time</th>
 								<th>Languages</th>
 								<th>Location</th>
 								<th>PF</th>
@@ -95,9 +94,11 @@
 								<td>{{pro.name}}</td>
 								<td>{{pro.email}}</td>
 								<td>
-									<span ng-repeat="slot in pro.slots">{{slot}},</span>
+									<span ng-repeat="slot in pro.slots">{{slot}},{{timeSlots[pro.time]}}</span>
+									<span ng-repeat="slot in pro.slots1">{{slot}},{{timeSlots[pro.time1]}}</span>
 								</td>
-								<td>{{timeSlots[pro.time]}}</td>
+								
+								</td>
 								<td>
 									<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
 								</td>
@@ -123,6 +124,9 @@
 							Welcome, {{$parent.id}}
 							<span class="logout"><a href="#" ng-click="logout($parent, $parent.$parent)">Logout</a></span>
 					</div>
+					<div>
+						<span class="logout"><a href="#" ng-click="resetData($parent, $parent.$parent)">Reset data</a></span>
+					</div>
 					<div class="login">
 						<h3> Add Tax Professional</h3>
 						<form name="userForm" ng-submit="submitForm()" novalidate>
@@ -130,21 +134,21 @@
 				    		<input type="hidden" name="proID" ng-value="user.id" />
 
 				    		<input class="form-control" type="text"  name="name" ng-model="user.name" placeholder="Name" id="name" required>
-				    		<div role="alert" ng-show="userForm.name.$dirty">
+				    		<div role="alert" class="alert" ng-show="userForm.name.$dirty">
 						      <span class="error" ng-show="userForm.name.$error.required">
 						        Name required</span>
 						    </div>
 
 				    		<input class="form-control" type="email" name="email" ng-model="user.email" placeholder="Email" id="email" required>
-				    		<div role="alert" ng-show="userForm.email.$dirty">
+				    		<div role="alert" class="alert" ng-show="userForm.email.$dirty">
 						      <span class="error" ng-show="userForm.email.$error.required">
 						        Email field required</span>
 						      <span class="error" ng-show="userForm.email.$error.email">
 						        Please enter valid email id.</span>
-						    </div>
+						    </div><br>
 
 				    		<input class="form-control" type="number" name="lat" min="1" max="10" ng-model="user.lat" placeholder="location:latitude" id="latitude" required>
-				    		<div role="alert" ng-show="userForm.lat.$dirty">
+				    		<div role="alert" class="alert" ng-show="userForm.lat.$dirty">
 						      <span class="error" ng-show="userForm.lat.$error.required">
 						        Latitude required</span>
 						      <span class="error" ng-show="!userForm.lat.$valid">
@@ -152,26 +156,33 @@
 						    </div>
 
 				 			<input class="form-control" name="lon" type="number" min="1" max="10" ng-model="user.lon" placeholder="location:longitude" id="longitude" required>
-				 			<div role="alert" ng-show="userForm.lon.$dirty">
+				 			<div role="alert" class="alert" ng-show="userForm.lon.$dirty">
 						      <span class="error" ng-show="userForm.lon.$error.required">
 						        Latitude required</span>
 						      <span class="error" ng-show="!userForm.lon.$valid">
 						        Please enter a number between 1 and 10</span>
-						    </div>
+						    </div><br>
 				 			
 
 				 			<input class="form-control" placeholder="Availability" name="date" type="date" ng-model="user.date" id="date" required>
-				 			<div role="alert" ng-show="userForm.date.$dirty">
+				 			<div role="alert" class="alert" ng-show="userForm.date.$dirty">
 						      <span class="error" ng-show="userForm.date.$error.required">
 						        Date required</span>
 						    </div>
 
 						    <select class="form-control" data-ng-options="o.name for o in timeSlotOptions" ng-model="user.selectedTimeSlot" required></select>
+						    <br>
 
-									
+						    <input class="form-control" placeholder="Availability" name="date1" type="date" ng-model="user.date1" id="date1" required>
+				 			<div role="alert" class="alert" ng-show="userForm.date.$dirty">
+						      <span class="error" ng-show="userForm.date.$error.required">
+						        Date required</span>
+						    </div>
 
+						    <select class="form-control" data-ng-options="o.name for o in timeSlotOptions" ng-model="user.selectedTimeSlot1" required></select>
+						    <br>
 
-						    <label>Languages spoken</label><br>
+						    <label>Languages spoken</label>
 						    <label ng-repeat="language in spokenLanguages">
 							  <input type="checkbox"
 							    name="selectedLanguages[]"
@@ -181,12 +192,12 @@
 							</label>
 
 							<input class="form-control" name="pf" type="number" min="1" max="3" ng-model="user.pf" placeholder="Promotional Factor" id="pf" required>
-				 			<div role="alert" ng-show="userForm.pf.$dirty">
+				 			<div role="alert" class="alert" ng-show="userForm.pf.$dirty">
 						      <span class="error" ng-show="userForm.pf.$error.required">
 						        Promotional Factor required</span>
 						      <span class="error" ng-show="!userForm.pf.$valid">
 						        Please enter a number between 1 and 3</span>
-						    </div>
+						    </div><br>
 
 				 			<input ng-show="userForm.$valid" type="submit" value="Add Professional"/>
 				 		
@@ -211,7 +222,10 @@
 								<td>
 									<span ng-repeat="lan in pro.languages">{{spokenLanguages[lan]}},</span>
 								</td>
-								<td><span ng-repeat="slot in pro.slots">{{slot}},{{timeSlots[pro.time]}}</span>
+								<td>
+									<span ng-repeat="slot in pro.slots">{{slot}},{{timeSlots[pro.time]}}</span><br>
+									<span ng-repeat="slot in pro.slots1">{{slot}},{{timeSlots[pro.time1]}}</span>
+								</td>
 								<td><span>{{pro.loc}}</span></td>
 								<td>{{pro.pf}}</td>
 								<td><span  class="selectProfessional" ng-click="editProfessional(pro.id)">Edit</span></td>

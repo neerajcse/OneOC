@@ -14,6 +14,8 @@ myApp.service('TaxProDBService', function($localStorage){
 				'loc': [4,5],
 				'slots':['04/28/2015'],
 				'time': 0,
+				'slots1':['05/28/2015'],
+				'time1': 0,
 				'languages' : [0,1],
 				'pf': 1,
 			},
@@ -24,6 +26,8 @@ myApp.service('TaxProDBService', function($localStorage){
 				'loc':[1,1],
 				'slots':['04/29/2015'],
 				'time': 1,
+				'slots1':['05/29/2015'],
+				'time1': 0,
 				'languages': [1],
 				'pf': 1,
 			},
@@ -34,7 +38,9 @@ myApp.service('TaxProDBService', function($localStorage){
 				'loc':[5,6], 
 				'slots':['04/30/2015'],
 				'languages': [1,2],
-				'time': 2,	
+				'time': 2,
+				'slots1':['05/30/2015'],
+				'time1': 1,
 				'pf': 1,
 			},
 			{
@@ -44,6 +50,8 @@ myApp.service('TaxProDBService', function($localStorage){
 				'loc':[5,6], 
 				'slots':['04/21/2015'],
 				'time': 3,
+				'slots1':['05/21/2015'],
+				'time1': 1,
 				'languages': [1,2],
 				'pf': 1,
 			},
@@ -59,7 +67,7 @@ myApp.service('TaxProDBService', function($localStorage){
 		return this.storage.listOfProfessionals;
 	}
 
-	this.addProfessional = function(name, languages, lat, lon, slots, email, pf, id, timeSlot) {
+	this.addProfessional = function(name, languages, lat, lon, slots, email, pf, id, timeSlot, slots1, timeSlot1) {
 		var isEditing = id != (undefined || null);
 		if(isEditing) {
 			for(var i=0;i<this.storage.listOfProfessionals.length;i++) {
@@ -79,6 +87,8 @@ myApp.service('TaxProDBService', function($localStorage){
 			'loc' : [lat,lon],
 			'pf' : pf,
 			'time': timeSlot.value,
+			'slots1': slots1,
+			'time1' : timeSlot1,
 		});
 		if (isEditing) {
 			alert("Details for " + pro.name + " edited successfully.");
@@ -95,6 +105,11 @@ myApp.service('TaxProDBService', function($localStorage){
 		this.storage.listOfProfessionals.splice(atIndex, 1);
 		return this.storage.listOfProfessionals;
 	};
+
+	this.reset = function() {
+		console.log("Resetting data...");
+		localStorage.clear();
+	}
 });
 
 /*********** CONTROLLERS BEGIN ************************/
@@ -129,7 +144,9 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 	$scope.selectedLocation = [0, 0];
 	$scope.selectedMapCell = undefined;
 	$scope.selectedLanguages = [];
-	$scope.selectedTimeSlot =  $scope.timeSlotOptions[0];;
+	$scope.selectedTimeSlot =  $scope.timeSlotOptions[0];
+	$scope.selectedTimeSlot1 =  $scope.timeSlotOptions[0];
+	
 
 	$scope.searchTriggered = false;
 	$scope.completedWork = false;
@@ -198,18 +215,24 @@ myApp.controller('CRUDTaxProController', function($scope, $filter, TaxProDBServi
 	];
 
   	$scope.user.selectedTimeSlot = $scope.timeSlotOptions[0];
+	$scope.user.selectedTimeSlot1 = $scope.timeSlotOptions[0];
+
 
 	/**
 	* This will not be used unless we decide to make an admin console.
 	*/	
-	$scope.addProfessional = function(name, languages, lat,lon, slots, email, pf, id, timeSlot) {
-		$scope.listOfProfessionals = TaxProDBService.addProfessional(name, languages, lat, lon, slots, email, parseInt(pf,10), id, timeSlot);
+	$scope.addProfessional = function(name, languages, lat,lon, slots, email, pf, id, timeSlot, slots1, timeSlot1) {
+		$scope.listOfProfessionals = TaxProDBService.addProfessional(name, languages, lat, lon, slots, email, 
+			parseInt(pf,10), id, timeSlot, slots1, timeSlot1);
 	};
 
 
 	$scope.submitForm = function() {
 		var formattedDate = $filter('date')($scope.user.date, "MM/dd/yyyy");
-      	$scope.addProfessional($scope.user.name, $scope.user.spokenlanguages, $scope.user.lat, $scope.user.lon, [formattedDate], $scope.user.email, $scope.user.pf, $scope.user.id, $scope.user.selectedTimeSlot);
+		var formattedDate1 = $filter('date')($scope.user.date1, "MM/dd/yyyy");
+		
+      	$scope.addProfessional($scope.user.name, $scope.user.spokenlanguages, $scope.user.lat, $scope.user.lon, [formattedDate], 
+      		$scope.user.email, $scope.user.pf, $scope.user.id, $scope.user.selectedTimeSlot, [formattedDate1], $scope.user.selectedTimeSlot1);
       	$scope.user = {
 			'spokenlanguages' : []
 	  	};
@@ -241,15 +264,29 @@ myApp.controller('CRUDTaxProController', function($scope, $filter, TaxProDBServi
 				$scope.user.lat = pro.loc[0];
 				$scope.user.lon = pro.loc[1];
 				$scope.user.email = pro.email;
+
 				var dateSplit = pro.slots[0].split("/");
 				$scope.user.date = new Date(dateSplit[2] + "-" + dateSplit[0] + "-" + dateSplit[1]);
+
+				var dateSplit = pro.slots1[0].split("/");
+				$scope.user.date1 = new Date(dateSplit[2] + "-" + dateSplit[0] + "-" + dateSplit[1]);
+
+
 				$scope.user.pf = pro.pf;
 				$scope.user.id = pro.id;
+
 				$scope.user.selectedTimeSlot = $scope.timeSlotOptions[pro.time];
+				$scope.user.selectedTimeSlot1 = $scope.timeSlotOptions[pro.time1];
 				//TaxProDBService.deleteProfessional(i,1);
 			}
 		}
 
+	}
+
+	$scope.resetData = function(parent, gp) {
+		TaxProDBService.reset();
+		alert("Data reset. Please login again.");
+		document.location.reload();
 	}
 });
 
