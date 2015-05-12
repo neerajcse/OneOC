@@ -59,7 +59,9 @@
 									    ng-click="toggleSelection(language)"> {{language}}
 									</label>
 
-								
+									<span> Please enter ID of the person who did you taxes last year (if any) </span>
+									<input class="form-control" placeholder="ID" name="proID" type="text" ng-model="lastYearPro" id="proID">
+
 									<br>
 									<br>
 									<br>
@@ -86,10 +88,10 @@
 								<th>Languages</th>
 								<th>Location</th>
 								<th>PF</th>
-								<th>Score</th>
+								<th>Match Factor</th>
 								<th>Selection</th>
 							</tr>
-							<tr ng-repeat="pro in listOfProfessionals|match_factor:selectedLanguages:selectedDate:selectedLocation[0]:selectedLocation[1]:selectedTimeSlot|reverse">
+							<tr ng-repeat="pro in listOfProfessionals|match_factor:selectedLanguages:selectedDate:selectedLocation[0]:selectedLocation[1]:selectedTimeSlot:lastYearPro|reverse">
 								<td>{{pro.id}}</td>
 								<td>{{pro.name}}</td>
 								<td>{{pro.email}}</td>

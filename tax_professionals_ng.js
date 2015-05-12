@@ -315,7 +315,7 @@ myApp.controller('LoginController', function($scope, TaxProDBService){
 /*********** FILTERS BEGIN ************************/
 
 myApp.filter('match_factor', function($filter){
-	return function(professionals, selected_languages, date, lat, lon, selectedTime) {
+	return function(professionals, selected_languages, date, lat, lon, selectedTime, lastYearPro) {
 		var formattedDate = $filter('date')(date, "MM/dd/yyyy");
 		console.log("Date is " + formattedDate);
 		console.log("Selected time slot is " + selectedTime.value);
@@ -339,12 +339,26 @@ myApp.filter('match_factor', function($filter){
 				score += 3;
 			}
 			if(professional.pf == 3) {
-				score += 7;
+				//INTRO-BUG: Want 7, added 8:
+				score += 8;
 			}
+
+			var languageMatchScore = 0;
 			for(var l=0;l<selected_languages.length;l++) {
+
 				if(professional.languages.indexOf(selected_languages[l]) > -1) {
-					score += 10;
+					languageMatchScore += 10;
 				}
+			}
+
+			//INTRO-BUG- Ignore any additional score after 20 points:
+			if (languageMatchScore >= 20) {
+				languageMatchScore = 20;
+			}
+			score += languageMatchScore;
+
+			if(professional.id == lastYearPro) {
+				score += 10;
 			}
 			
 			if(	professional.slots.indexOf(formattedDate) > -1 ) {
@@ -353,7 +367,12 @@ myApp.filter('match_factor', function($filter){
 			if(professional.time == selectedTime.value) {
 				score += 8;
 			}
-			score += 3 * ( 15 - Math.ceil(distance(lat, lon, professional.loc[0], professional.loc[1])) );
+
+			//INTRO-BUG - Ignore distance score if any of these is 10:
+			if ( professional.loc[0] != 10 || professional.loc[1] != 10) {
+				score += 3 * ( 15 - Math.ceil(distance(lat, lon, professional.loc[0], professional.loc[1])) );	
+			}
+			
 			clone[i]['score'] = score;
 		}
 
