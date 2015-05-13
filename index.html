@@ -45,12 +45,13 @@
 						
 						<table>
 							<tr>
-								<td style="vertical-align:top">
-									<span> Please select a date/time:</span>
-									<input class="form-control" placeholder="Availability" name="date" type="date" ng-model="selectedDate" id="date" required>
+								<td style="vertical-align:top; width:500px">
+									<span> Please select a date or time-slot:</span><br>
+									<input  datepicker class="form-control" placeholder="Select Date" name="date" type="text" ng-model="selectedDate" id="date" required>
 									<select data-ng-options="o.name for o in timeSlotOptions" ng-model="selectedTimeSlot"></select>
+									<hr>
 									<br>
-									<span> Do you have any language preferences?</span>
+									<span> Do you have any language preferences?</span><br>
 									<label ng-repeat="language in spokenLanguages">
 									  <input type="checkbox"
 									    name="selectedLanguages[]"
@@ -58,12 +59,11 @@
 									    ng-checked="selection.indexOf(language) > -1"
 									    ng-click="toggleSelection(language)"> {{language}}
 									</label>
+									<hr>
 									<br>
-									<span> Please enter ID of the person who did you taxes last year (if any) </span>
+									<span> Please enter ID of the person who did your taxes last year (if any) </span>
 									<input class="form-control" placeholder="ID" name="proID" type="text" ng-model="lastYearPro" id="proID">
-
-									<br>
-									<br>
+									<hr>
 									<br>
 									<button ng-click="triggerSearch()">Search</button>
 								</td>
@@ -116,7 +116,7 @@
 					<div ng-show="completedWork">
 						<span>
 							<h1>Congratulations</h1>
-							<h2>You have successfully scheduled an appointment with {{selectedProfessional}} on {{date}}</h2>
+							<h2>You have successfully scheduled an appointment with {{selectedProfessional}} on {{selectedDate}}</h2>
 							<h3>You have been logged out. <span class="logout"><a href="#" ng-click="logout($parent)">Login Again</a></span></h3>
 						</span>
 					</div>
@@ -166,20 +166,13 @@
 						    </div><br>
 				 			
 
-				 			<input class="form-control" placeholder="Availability" name="date" type="date" ng-model="user.date" id="date" required>
-				 			<div role="alert" class="alert" ng-show="userForm.date.$dirty">
-						      <span class="error" ng-show="userForm.date.$error.required">
-						        Date required</span>
-						    </div>
+				 			<input datepicker placeholder="Select Date" name="dateOne" type="text" ng-model="date1" id="dateOne">
 
 						    <select class="form-control" data-ng-options="o.name for o in timeSlotOptions" ng-model="user.selectedTimeSlot" required></select>
 						    <br>
 
-						    <input class="form-control" placeholder="Availability" name="date1" type="date" ng-model="user.date1" id="date1" required>
-				 			<div role="alert" class="alert" ng-show="userForm.date.$dirty">
-						      <span class="error" ng-show="userForm.date.$error.required">
-						        Date required</span>
-						    </div>
+						    <input datepicker placeholder="Select Date" name="dateTwo" type="text" ng-model="date2" id="dateTwo">
+
 
 						    <select class="form-control" data-ng-options="o.name for o in timeSlotOptions" ng-model="user.selectedTimeSlot1" required></select>
 						    <br>
@@ -201,7 +194,7 @@
 						        Please enter a number between 1 and 3</span>
 						    </div><br>
 
-				 			<input ng-show="userForm.$valid" type="submit" value="Add Professional"/>
+				 			<input ng-show="userForm.$valid && date1!='' && date2!=''" type="submit" ng-value="submitValue"/>
 				 		
 						</form>
 					</div>

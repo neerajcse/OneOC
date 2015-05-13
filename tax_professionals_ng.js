@@ -88,7 +88,7 @@ myApp.service('TaxProDBService', function($localStorage){
 			'pf' : pf,
 			'time': timeSlot.value,
 			'slots1': slots1,
-			'time1' : timeSlot1,
+			'time1' : timeSlot1.value,
 		});
 		if (isEditing) {
 			alert("Details for " + pro.name + " edited successfully.");
@@ -216,6 +216,7 @@ myApp.controller('CRUDTaxProController', function($scope, $filter, TaxProDBServi
 
   	$scope.user.selectedTimeSlot = $scope.timeSlotOptions[0];
 	$scope.user.selectedTimeSlot1 = $scope.timeSlotOptions[0];
+	$scope.submitValue = "Add Professional";
 
 
 	/**
@@ -231,12 +232,21 @@ myApp.controller('CRUDTaxProController', function($scope, $filter, TaxProDBServi
 		var formattedDate = $filter('date')($scope.user.date, "MM/dd/yyyy");
 		var formattedDate1 = $filter('date')($scope.user.date1, "MM/dd/yyyy");
 		
-      	$scope.addProfessional($scope.user.name, $scope.user.spokenlanguages, $scope.user.lat, $scope.user.lon, [formattedDate], 
-      		$scope.user.email, $scope.user.pf, $scope.user.id, $scope.user.selectedTimeSlot, [formattedDate1], $scope.user.selectedTimeSlot1);
+      	$scope.addProfessional($scope.user.name, $scope.user.spokenlanguages, $scope.user.lat, $scope.user.lon, [$scope.date1], 
+      		$scope.user.email, $scope.user.pf, $scope.user.id, $scope.user.selectedTimeSlot, [$scope.date2], $scope.user.selectedTimeSlot1);
       	$scope.user = {
 			'spokenlanguages' : []
 	  	};
 	  	$scope.userForm.$setPristine();
+	  	$scope.date1 = "";
+	  	$scope.date2 = "";
+	  	$scope.selectedLanguages = [];
+	  	$scope.selection = [];
+	  	$('input:checkbox').removeAttr('checked');
+	  	$scope.submitValue = "Add Professional";
+	  	$scope.user.selectedTimeSlot = $scope.timeSlotOptions[0];
+		$scope.user.selectedTimeSlot1 = $scope.timeSlotOptions[0];
+		$scope.submitValue = "Add Professional";
     };
 
 	$scope.toggleSelection = function(language) {
@@ -255,22 +265,27 @@ myApp.controller('CRUDTaxProController', function($scope, $filter, TaxProDBServi
 	}
 
 	$scope.editProfessional = function(id) {
-		console.log("Editing pro " + id)
+		console.log("Editing pro " + id);
+		$scope.submitValue = "Save Changes";
 		for(var i=0;i<$scope.listOfProfessionals.length;i++) {
 			var pro = $scope.listOfProfessionals[i];
 			if (pro.id == id) {
 				$scope.user.name = pro.name;
-				$scope.user.spokenLanguages = pro.languages;
+				$scope.user.spokenlanguages = pro.languages;
+
+				
+
 				$scope.user.lat = pro.loc[0];
 				$scope.user.lon = pro.loc[1];
 				$scope.user.email = pro.email;
 
 				var dateSplit = pro.slots[0].split("/");
 				$scope.user.date = new Date(dateSplit[2] + "-" + dateSplit[0] + "-" + dateSplit[1]);
+				$scope.date1 = pro.slots[0];
 
 				var dateSplit = pro.slots1[0].split("/");
 				$scope.user.date1 = new Date(dateSplit[2] + "-" + dateSplit[0] + "-" + dateSplit[1]);
-
+				$scope.date2 = pro.slots1[0];
 
 				$scope.user.pf = pro.pf;
 				$scope.user.id = pro.id;
@@ -316,7 +331,7 @@ myApp.controller('LoginController', function($scope, TaxProDBService){
 
 myApp.filter('match_factor', function($filter){
 	return function(professionals, selected_languages, date, lat, lon, selectedTime, lastYearPro) {
-		var formattedDate = $filter('date')(date, "MM/dd/yyyy");
+		var formattedDate = date;
 		console.log("Date is " + formattedDate);
 		console.log("Selected time slot is " + selectedTime.value);
 
@@ -468,14 +483,15 @@ myApp.filter('reverse', function() {
 /** DO NOT TOUCH THIS UNTIL YOU'VE READ ABOUT ANGULARJS DIRECTIVES**/
 myApp.directive('datepicker', function() {
     return {
-        restrict: 'A',
         require : 'ngModel',
         link : function (scope, element, attrs, ngModelCtrl) {
         	$(function(){
                 element.datepicker({
                     dateFormat:'mm/dd/yy',
                     onSelect:function (date) {
-                    	scope.date = date.getMonth() + "/" + date.getDate() + "/" + date.getYear();
+                    	var ngModelName = this.attributes['ng-model'].value;
+                    	scope[ngModelName] = date;
+                    	console.log(date);
                        	scope.$apply();
                     }
                 });
