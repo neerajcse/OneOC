@@ -194,7 +194,9 @@
 						        Please enter a number between 1 and 3</span>
 						    </div><br>
 
-				 			<input ng-show="userForm.$valid && date1!='' && date2!=''" type="submit" ng-value="submitValue"/>
+				 			<input ng-disabled="!userForm.$valid || date1=='' || date2==''" type="submit" ng-value="submitValue"/>
+				 			<br>
+				 			<span ng-show="!userForm.$valid || date1=='' || date2==''"> Button is disabled because form is incomplete or has invalid values</span>
 				 		
 						</form>
 					</div>
