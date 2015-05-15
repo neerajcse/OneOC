@@ -101,13 +101,13 @@ myApp.service('TaxProDBService', function($localStorage){
 	};
 
 	this.deleteProfessional = function(atIndex) {
-		console.log(atIndex);
+		//console.log(atIndex);
 		this.storage.listOfProfessionals.splice(atIndex, 1);
 		return this.storage.listOfProfessionals;
 	};
 
 	this.reset = function() {
-		console.log("Resetting data...");
+		//console.log("Resetting data...");
 		localStorage.clear();
 	}
 });
@@ -154,7 +154,7 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 
 	$scope.selectProfessional = function(id) {
 		id = parseInt(id - 1000,10);
-		console.log("Got " + id);
+		//console.log("Got " + id);
 		var r = confirm("Please confirm that you want to schedule a meeting with " + $scope.listOfProfessionals[id]['name']);
 		if (r == true) {
 		   $scope.completedWork = true;
@@ -184,6 +184,12 @@ myApp.controller('TaxProController', function($scope, TaxProDBService){
 		$scope.searchTriggered = false;
 		$scope.completedWork = false;
 		$scope.selectedProfessional = undefined;
+		$scope.selectedLocation = [0, 0];
+		$scope.selectedMapCell = undefined;
+		$scope.selectedLanguages = [];
+		$scope.selectedTimeSlot =  $scope.timeSlotOptions[0];
+		$scope.selectedTimeSlot1 =  $scope.timeSlotOptions[0];
+
 		parentController.logout();
 	}
 
@@ -265,7 +271,7 @@ myApp.controller('CRUDTaxProController', function($scope, $filter, TaxProDBServi
 	}
 
 	$scope.editProfessional = function(id) {
-		console.log("Editing pro " + id);
+		//console.log("Editing pro " + id);
 		$scope.submitValue = "Save Changes";
 		for(var i=0;i<$scope.listOfProfessionals.length;i++) {
 			var pro = $scope.listOfProfessionals[i];
@@ -322,6 +328,7 @@ myApp.controller('LoginController', function($scope, TaxProDBService){
 
 	$scope.logout = function() {
 		$scope.loggedIn = false;
+		window.location.reload();
 	};
 });
 
@@ -333,7 +340,7 @@ myApp.filter('match_factor', function($filter){
 	return function(professionals, selected_languages, date, lat, lon, selectedTime, lastYearPro) {
 		var formattedDate = date;
 		console.log("Date is " + formattedDate);
-		console.log("Selected time slot is " + selectedTime.value);
+		//console.log("Selected time slot is " + selectedTime.value);
 
 		var distance = function(x1, y1, x2, y2) {
 			var a = x1 - x2;
@@ -378,14 +385,17 @@ myApp.filter('match_factor', function($filter){
 			
 			if(	professional.slots.indexOf(formattedDate) > -1 ) {
 				score += 12;
+				if(professional.time == selectedTime.value) {
+					score += 8;
+				}
 			}
-			if(professional.time == selectedTime.value) {
-				score += 8;
-			}
+			
 
 			//INTRO-BUG - Ignore distance score if any of these is 10:
-			if ( professional.loc[0] != 10 || professional.loc[1] != 10) {
-				score += 3 * ( 15 - Math.ceil(distance(lat, lon, professional.loc[0], professional.loc[1])) );	
+
+			if ( lat == 10 || lon == 10) {
+			} else {
+				score += 3 * ( 15 - Math.ceil(distance(lat, lon, professional.loc[0], professional.loc[1])) );
 			}
 			
 			clone[i]['score'] = score;
@@ -416,7 +426,7 @@ myApp.filter('language', function() {
 	return function(professionals, language) {
 		var filtered = [];
 		language = parseInt(language, 10);
-		console.log("Value for langauge is " + language)
+		//console.log("Value for langauge is " + language)
 		if(language == -1) {
 			return professionals;
 		}
@@ -491,7 +501,7 @@ myApp.directive('datepicker', function() {
                     onSelect:function (date) {
                     	var ngModelName = this.attributes['ng-model'].value;
                     	scope[ngModelName] = date;
-                    	console.log(date);
+                    	//console.log(date);
                        	scope.$apply();
                     }
                 });

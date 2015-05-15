@@ -177,6 +177,10 @@ input[type="submit"][disabled] {
   background-color: lightgrey;
 }
 
+div .alert {
+  color: red;
+}
+
 .shadow {
   background: #000;
   border-radius: 12px 12px 4px 4px;
